@@ -34,4 +34,4 @@ The system relies on three core data streams to inform the Gemini Decision Engin
 4. Run the development server: `npm run dev`.
 
 ---
-*Developed for PromptWars: Virtual GenAI Challenge*
+*Developed for PromptWars: Virtual GenAI Challenge.*
