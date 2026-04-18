@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { chat, getSessionId } from '../utils/api';
 
 export default function GuestPortal() {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState([
     { sender: 'ai', text: 'Welcome. I am your automated concierge for the Global Tech Summit. How may I assist you?' }
   ]);
@@ -8,32 +11,48 @@ export default function GuestPortal() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef(null);
 
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    getSessionId().then(setSession).catch(console.error);
+  }, []);
+
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, isTyping]);
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
     
     setMessages(prev => [...prev, { sender: 'user', text: input }]);
+    const currentInput = input;
     setInput('');
     setIsTyping(true);
     
-    // Simulate AI response
-    setTimeout(() => {
-      let reply = "I have logged your request.";
-      if (input.toLowerCase().includes('valet')) reply = "Valet is at the South Entrance. Wait time is approx 5 mins.";
-      if (input.toLowerCase().includes('bathroom') || input.toLowerCase().includes('restroom')) reply = "Restrooms are down the hall, right of the main stage.";
-      if (input.toLowerCase().includes('schedule')) reply = "The keynote address begins in 15 mins at the Main Stage.";
-      
+    try {
+      const response = await chat(currentInput, session);
+      setMessages(prev => [...prev, { sender: 'ai', text: response.reply }]);
+    } catch (error) {
+      setMessages(prev => [...prev, { sender: 'ai', text: "Error: Could not connect to the venue network." }]);
+    } finally {
       setIsTyping(false);
-      setMessages(prev => [...prev, { sender: 'ai', text: reply }]);
-    }, 1000);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F4F5] text-[#111111] font-sans flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F4F4F5] text-[#111111] font-sans flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-sm mb-4">
+        <button 
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 text-sm text-gray-500 hover:text-black transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Home
+        </button>
+      </div>
       <div className="w-full max-w-sm h-[600px] bg-white rounded-2xl enterprise-shadow overflow-hidden border border-gray-200 flex flex-col">
         
         <header className="px-6 py-5 border-b border-gray-100 bg-[#FAFAFA] text-center">

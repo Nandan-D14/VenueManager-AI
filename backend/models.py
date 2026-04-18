@@ -39,3 +39,15 @@ class AgentSession(BaseModel):
     roster: List[StaffMember] = []
     active_plan: Optional[ActionPlan] = None
     phase: str = "knowledge_acquisition" # knowledge_acquisition, validation, deployment
+    admin_chat_history: List[Dict] = []
+
+class AdminChatPayload(BaseModel):
+    message: str
+    image_base64: Optional[str] = None
+    session_id: str
+
+class AdminChatResponseSchema(BaseModel):
+    reply: str
+    suggested_options: List[str] = []
+    plan_ready: bool
+    extracted_dna: Optional[EventDNA] = None
